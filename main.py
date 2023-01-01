@@ -1,7 +1,3 @@
-'''
-Code taken from: https://jovian.ai/mohanavignesh/flower-classification
-'''
-
 # Importing all dependencies
 import torch
 import torchvision
