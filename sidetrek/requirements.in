@@ -1,0 +1,6 @@
+torch
+torchvision
+matplotlib
+dataclasses-json
+joblib
+typing
