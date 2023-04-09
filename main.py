@@ -156,7 +156,7 @@ def fit(epochs, lr, model, train_loader, val_loader, opt_func=torch.optim.SGD):
         result["train_loss"] = torch.stack(train_losses).mean().item()
         model.epoch_end(epoch, result)
         history.append(result)
-    return history
+    return model
 
 
 # Getting default device

@@ -1,7 +1,0 @@
-torch
-torchvision
-matplotlib
-dataclasses_json
-joblib
-numpy<1.23.5
-sidetrek==0.0.14
