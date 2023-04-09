@@ -1,0 +1,48 @@
+# NOTE: this file is copied to the user machine's local repo folder (housing the user project) during flyte deployment
+# i.e. it does NOT run in this folder - but rather inside user's local repo folder that's being deployed
+
+# See `sidetrek-flyte` repo for the build automation for this base flyte image
+# Build stage
+FROM sidetrek/base-flyte:latest as build
+
+WORKDIR /root
+ENV VENV /opt/venv
+ENV LANG C.UTF-8
+ENV LC_ALL C.UTF-8
+ENV PYTHONPATH /root
+
+# Make sure to use venv
+ENV PATH="$VENV/bin:$PATH"
+
+# NOTE: This is NOT our dependencies, but rather user's project dependencies
+# NOTE: project folder here is the same as GENERATED_PROJECT_DIRNAME (which is also same as project folder added in tekton)
+# NOTE: No need to run pip-compile again - flyte workflow registration process already did it so just use the compiled dependencies file
+COPY ./project/requirements.txt /root
+# Add --no-cache-dir to prevent OOMKilled
+RUN pip install --no-cache-dir -r /root/requirements.txt
+
+# Production stage
+FROM sidetrek/base-flyte:latest
+
+WORKDIR /root
+ENV VENV /opt/venv
+ENV LANG C.UTF-8
+ENV LC_ALL C.UTF-8
+ENV PYTHONPATH /root
+
+# Add flytectl to PATH
+ENV PATH="/bin/flytectl:$PATH"
+
+# Make sure to use venv
+ENV PATH="$VENV/bin:$PATH"
+
+# Copy dependencies from build stage
+COPY --from=build /opt/venv /opt/venv
+
+# Copy the actual code (again, user's project code)
+COPY . /root
+
+# This tag is supplied by the build script and will be used to determine the version
+# when registering tasks, workflows, and launch plans
+ARG tag
+ENV FLYTE_INTERNAL_IMAGE $tag

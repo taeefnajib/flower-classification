@@ -1,4 +1,3 @@
-# Importing all dependencies
 import torch
 import torchvision
 import torchvision
@@ -10,22 +9,24 @@ import torch.nn.functional as F
 from dataclasses import dataclass
 from dataclasses_json import dataclass_json
 from typing import Optional, List, Dict
+from sidetrek import get_project_dir
+
 
 # Creating dataclass
 @dataclass_json
 @dataclass
 class Hyperparameters(object):
-    base_dir: str = "flowers"
     validation_size: int = 600
     batch_size: int = 32
-    num_epochs: int = 10
-    opt_func: Optional[float] = torch.optim.Adam
-    lr: float = 0.001
+    num_epochs: int = 5
+    lr: float = 0.01
+
 
 
 # Instantiating Hyperparameters class
 hp = Hyperparameters()
 
+base_dir = f"{get_project_dir('taeefnajib/flower-classification')}/flowers"
 
 # Creating dataset
 def create_dataset(base_dir, validation_size):
@@ -49,8 +50,6 @@ def create_dataset(base_dir, validation_size):
     return dataset, train_ds, val_ds, test_ds
 
 
-# Specifying dataset, train_ds, val_ds and test_ds
-dataset, train_ds, val_ds, test_ds = create_dataset(hp.base_dir, hp.validation_size)
 
 # Loading data
 def load_data(train_ds, val_ds, test_ds, batch_size):
@@ -59,9 +58,6 @@ def load_data(train_ds, val_ds, test_ds, batch_size):
     test_dl = DataLoader(test_ds, batch_size=batch_size)
     return train_dl, val_dl, test_dl
 
-
-# Specifying train_dl, val_dl, test_dl
-train_dl, val_dl, test_dl = load_data(train_ds, val_ds, test_ds, hp.batch_size)
 
 # Checking accuracy
 def accuracy(outputs, labels):
@@ -198,23 +194,19 @@ class DeviceDataLoader:
         return len(self.dl)
 
 
-def wf(
-    train_dl: torch.utils.data.DataLoader,
-    val_dl: torch.utils.data.DataLoader,
-    model: FlowerClassificationModel,
-    num_epochs: int,
-    lr: int,
-    opt_func: Optional[float],
-) -> FlowerClassificationModel:
+def wf(hp: Hyperparameters) -> torch.nn.Module:
+    dataset, train_ds, val_ds, test_ds = create_dataset(base_dir, hp.validation_size)
+    train_dl, val_dl, test_dl = load_data(train_ds, val_ds, test_ds, hp.batch_size)
     device = get_default_device()
     train_dl = DeviceDataLoader(train_dl, device)
     val_dl = DeviceDataLoader(val_dl, device)
     to_device(model, device)
     model = to_device(model, device)
     evaluate(model, val_dl)
-    fit(num_epochs, lr, model, train_dl, val_dl, opt_func)
+    opt_func=torch.optim.SGD
+    fit(hp.num_epochs, hp.lr, model, train_dl, val_dl, opt_func)
     return model
 
 
 if __name__ == "__main__":
-    wf(train_dl, val_dl, model, hp.num_epochs, hp.lr, hp.opt_func)
+    wf(hp = hp)

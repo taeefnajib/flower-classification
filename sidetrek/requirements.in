@@ -1,6 +1,7 @@
 torch
 torchvision
 matplotlib
-dataclasses-json
+dataclasses_json
 joblib
-typing
+numpy<1.23.5
+sidetrek==0.0.14

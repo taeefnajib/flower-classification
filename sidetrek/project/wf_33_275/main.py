@@ -1,3 +1,5 @@
+from flytekit import Resources, task
+
 import torch
 import torchvision
 import torchvision
@@ -194,6 +196,7 @@ class DeviceDataLoader:
         return len(self.dl)
 
 
+@task(requests=Resources(cpu="2",mem="4Gi",storage="0Gi",ephemeral_storage="1Gi"),limits=Resources(cpu="2",mem="4Gi",storage="0Gi",ephemeral_storage="1Gi"),retries=3)
 def wf(hp: Hyperparameters) -> torch.nn.Module:
     dataset, train_ds, val_ds, test_ds = create_dataset(base_dir, hp.validation_size)
     train_dl, val_dl, test_dl = load_data(train_ds, val_ds, test_ds, hp.batch_size)
